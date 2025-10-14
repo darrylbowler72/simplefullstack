@@ -16,11 +16,9 @@ jobs:
     defaults:
       run:
         shell: bash  # Use bash shell on Windows self-hosted runner
+        working-directory: C:\Users\darryl.a.bowler\source\simplefullstack
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Verify Podman installation
         run: |
           echo "Checking Podman version..."
