@@ -13,6 +13,10 @@ jobs:
     name: Build and Deploy with Podman
     runs-on: self-hosted  # Use the local self-hosted runner with Podman pre-installed
 
+    defaults:
+      run:
+        shell: bash  # Use bash shell on Windows self-hosted runner
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
