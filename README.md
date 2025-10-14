@@ -38,7 +38,7 @@ cd simplefullstack
 
 2. Start all services:
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 3. Access the application:
@@ -136,12 +136,12 @@ simplefullstack/
 
 To stop all services:
 ```bash
-docker-compose down
+docker compose down
 ```
 
 To stop and remove all data:
 ```bash
-docker-compose down -v
+docker compose down -v
 ```
 
 ## License
