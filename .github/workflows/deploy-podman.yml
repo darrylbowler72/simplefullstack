@@ -1,0 +1,139 @@
+name: Deploy to Local Podman
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-podman:
+    name: Build and Deploy with Podman
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install podman
+          podman --version
+      
+      - name: Install podman-compose
+        run: |
+          pip3 install podman-compose
+          podman-compose --version
+      
+      - name: Build images with Podman
+        run: |
+          # Build backend image
+          podman build -t tasktracker-backend:latest ./backend
+          
+          # Build frontend image
+          podman build -t tasktracker-frontend:latest ./frontend
+      
+      - name: Create Podman network
+        run: |
+          podman network create tasktracker-network || true
+      
+      - name: Deploy PostgreSQL database
+        run: |
+          podman run -d \
+            --name tasktracker-db \
+            --network tasktracker-network \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_PASSWORD=postgres \
+            -e POSTGRES_DB=tasktracker \
+            -p 5432:5432 \
+            --health-cmd "pg_isready -U postgres" \
+            --health-interval 5s \
+            --health-timeout 5s \
+            --health-retries 5 \
+            postgres:15-alpine
+      
+      - name: Wait for database to be healthy
+        run: |
+          echo "Waiting for database to be ready..."
+          for i in {1..30}; do
+            if podman exec tasktracker-db pg_isready -U postgres > /dev/null 2>&1; then
+              echo "Database is ready!"
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 2
+          done
+      
+      - name: Deploy backend
+        run: |
+          podman run -d \
+            --name tasktracker-backend \
+            --network tasktracker-network \
+            -e DATABASE_URL=postgresql://postgres:postgres@tasktracker-db:5432/tasktracker \
+            -p 8000:8000 \
+            tasktracker-backend:latest
+      
+      - name: Wait for backend to be ready
+        run: |
+          echo "Waiting for backend to be ready..."
+          for i in {1..30}; do
+            if curl -f http://localhost:8000/tasks > /dev/null 2>&1; then
+              echo "Backend is ready!"
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 2
+          done
+      
+      - name: Deploy frontend
+        run: |
+          podman run -d \
+            --name tasktracker-frontend \
+            --network tasktracker-network \
+            -e NEXT_PUBLIC_API_URL=http://localhost:8000 \
+            -p 3000:3000 \
+            tasktracker-frontend:latest
+      
+      - name: Verify deployment
+        run: |
+          echo "=== Deployment Summary ==="
+          echo "Containers running:"
+          podman ps
+          
+          echo ""
+          echo "=== Testing Backend API ==="
+          curl -f http://localhost:8000/tasks || (echo "Backend API check failed" && exit 1)
+          
+          echo ""
+          echo "=== Container Logs ==="
+          echo "--- Database logs ---"
+          podman logs tasktracker-db --tail 20
+          echo ""
+          echo "--- Backend logs ---"
+          podman logs tasktracker-backend --tail 20
+          echo ""
+          echo "--- Frontend logs ---"
+          podman logs tasktracker-frontend --tail 20
+      
+      - name: Cleanup on failure
+        if: failure()
+        run: |
+          echo "Cleaning up containers..."
+          podman stop tasktracker-frontend tasktracker-backend tasktracker-db || true
+          podman rm tasktracker-frontend tasktracker-backend tasktracker-db || true
+          podman network rm tasktracker-network || true
+      
+      - name: Stop containers (cleanup for success)
+        if: success()
+        run: |
+          echo "Stopping containers after successful deployment verification..."
+          podman stop tasktracker-frontend tasktracker-backend tasktracker-db
+          podman rm tasktracker-frontend tasktracker-backend tasktracker-db
+          podman network rm tasktracker-network
+          
+          echo "Deployment workflow completed successfully!"
+          echo "To deploy locally, run the following commands:"
+          echo "  podman-compose up --build"
