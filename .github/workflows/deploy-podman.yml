@@ -11,22 +11,17 @@ permissions:
 jobs:
   deploy-podman:
     name: Build and Deploy with Podman
-    runs-on: ubuntu-latest
-    
+    runs-on: self-hosted  # Use the local self-hosted runner with Podman pre-installed
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Install Podman
+
+      - name: Verify Podman installation
         run: |
-          sudo apt-get update
-          sudo apt-get -y install podman
+          echo "Checking Podman version..."
           podman --version
-      
-      - name: Install podman-compose
-        run: |
-          pip3 install podman-compose
-          podman-compose --version
+          "/c/Users/darryl.a.bowler/AppData/Roaming/Python/Python314/Scripts/podman-compose.exe" --version || echo "podman-compose not found"
       
       - name: Build images with Podman
         run: |
@@ -126,14 +121,17 @@ jobs:
           podman rm tasktracker-frontend tasktracker-backend tasktracker-db || true
           podman network rm tasktracker-network || true
       
-      - name: Stop containers (cleanup for success)
+      - name: Deployment successful
         if: success()
         run: |
-          echo "Stopping containers after successful deployment verification..."
-          podman stop tasktracker-frontend tasktracker-backend tasktracker-db
-          podman rm tasktracker-frontend tasktracker-backend tasktracker-db
-          podman network rm tasktracker-network
-          
-          echo "Deployment workflow completed successfully!"
-          echo "To deploy locally, run the following commands:"
-          echo "  podman-compose up --build"
+          echo "=========================================="
+          echo "Deployment Complete!"
+          echo "=========================================="
+          echo "Frontend: http://localhost:3000"
+          echo "Backend API: http://localhost:8000"
+          echo "API Docs: http://localhost:8000/docs"
+          echo "=========================================="
+          echo ""
+          echo "Containers are running and will remain active."
+          echo "To stop containers, run:"
+          echo "  podman stop tasktracker-frontend tasktracker-backend tasktracker-db"
