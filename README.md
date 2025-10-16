@@ -116,6 +116,56 @@ The repository includes a GitHub Actions workflow that automatically builds and 
 
 To view the workflow: `.github/workflows/deploy-podman.yml`
 
+#### GitHub Self-Hosted Runner Setup
+
+The CI/CD workflow uses a self-hosted GitHub Actions runner to build and deploy the application locally. Here's how to manage it:
+
+**Starting the Runner**
+
+The runner is typically installed at `C:\Users\[username]\actions-runner` (or `~/actions-runner` on Linux/Mac).
+
+To start the runner manually:
+```bash
+cd C:\Users\[username]\actions-runner  # Windows
+# or
+cd ~/actions-runner  # Linux/Mac
+
+# Start the runner
+./run.cmd  # Windows
+# or
+./run.sh  # Linux/Mac
+```
+
+**Installing as a Windows Service (Recommended)**
+
+For automatic startup, install the runner as a Windows service from an Administrator PowerShell:
+```powershell
+cd C:\Users\[username]\actions-runner
+.\svc.cmd install
+.\svc.cmd start
+```
+
+**Managing the Service**
+```powershell
+# Check status
+.\svc.cmd status
+
+# Stop the service
+.\svc.cmd stop
+
+# Uninstall the service
+.\svc.cmd uninstall
+```
+
+**Verifying the Runner**
+
+Check if the runner is active:
+1. Go to your GitHub repository
+2. Navigate to **Settings → Actions → Runners**
+3. Verify your self-hosted runner shows as "Idle" (green) instead of "Offline" (gray)
+
+**Note**: The runner must be running for the automated deployment workflow to execute. If the runner is offline, workflows will queue until it comes online.
+
 ## Local Development (without Docker)
 
 ### Backend Setup
