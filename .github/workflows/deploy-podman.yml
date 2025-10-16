@@ -16,9 +16,18 @@ jobs:
     defaults:
       run:
         shell: bash  # Use bash shell on Windows self-hosted runner
-        working-directory: C:\Users\darryl.a.bowler\source\simplefullstack
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cleanup existing containers
+        run: |
+          echo "Stopping and removing existing containers..."
+          podman stop tasktracker-frontend tasktracker-backend tasktracker-db 2>/dev/null || true
+          podman rm tasktracker-frontend tasktracker-backend tasktracker-db 2>/dev/null || true
+          echo "Cleanup completed"
+
       - name: Verify Podman installation
         run: |
           echo "Checking Podman version..."
@@ -118,10 +127,10 @@ jobs:
       - name: Cleanup on failure
         if: failure()
         run: |
-          echo "Cleaning up containers..."
-          podman stop tasktracker-frontend tasktracker-backend tasktracker-db || true
-          podman rm tasktracker-frontend tasktracker-backend tasktracker-db || true
-          podman network rm tasktracker-network || true
+          echo "Cleaning up containers due to failure..."
+          podman stop tasktracker-frontend tasktracker-backend tasktracker-db 2>/dev/null || true
+          podman rm tasktracker-frontend tasktracker-backend tasktracker-db 2>/dev/null || true
+          echo "Cleanup completed"
       
       - name: Deployment successful
         if: success()
