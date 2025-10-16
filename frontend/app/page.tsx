@@ -32,7 +32,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <header className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Task Tracker</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">My Awesome Task Tracker</h1>
           <p className="text-gray-600 dark:text-gray-400">Manage your tasks efficiently</p>
         </header>
 
