@@ -1,0 +1,18 @@
+site_name: 'Task Tracker Application'
+site_description: 'A full-stack task management application with React/Next.js frontend and FastAPI backend'
+
+nav:
+  - Home: index.md
+  - Architecture: architecture.md
+  - Deployment:
+      - Docker/Podman: deployment.md
+      - Podman Deployment Guide: podman-deployment.md
+
+plugins:
+  - techdocs-core
+
+theme:
+  name: material
+  palette:
+    primary: indigo
+    accent: indigo
