@@ -1,0 +1,26 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: simplefullstack
+  title: Task Tracker Application
+  description: A full-stack task management application with React/Next.js frontend and FastAPI backend
+  annotations:
+    github.com/project-slug: darrylbowler72/simplefullstack
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - react
+    - nextjs
+    - fastapi
+    - python
+    - postgresql
+    - docker
+    - podman
+  links:
+    - url: https://github.com/darrylbowler72/simplefullstack
+      title: GitHub Repository
+      icon: github
+spec:
+  type: service
+  lifecycle: production
+  owner: guests
+  system: task-management
